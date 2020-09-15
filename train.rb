@@ -6,14 +6,14 @@ class Train
 
   # Имеет номер (произвольная строка) и тип (грузовой, пассажирский) и количество
   # вагонов, эти данные указываются при создании экземпляра класса
-  attr_reader :speed, :number_of_wagons, :route, :number, :type
+  attr_reader :speed, :wagons, :route, :number, :type
 
   # Может возвращать количество вагонов
 
-  def initialize(number, type, number_of_wagons)
+  def initialize(number, type)
     @number = number
     @type = type
-    @number_of_wagons = number_of_wagons
+    @wagons = []
     @speed = 0
     @route = nil
   end
@@ -34,12 +34,18 @@ class Train
   # просто увеличивает или уменьшает количество вагонов). Прицепка/отцепка
   # вагонов может осуществляться только если поезд не движется.
 
-  def attach
-    @number_of_wagons += 1 if @speed == 0
+  def attach(wagon)
+    if @type == wagon.type && @speed == 0
+      @wagons << wagon
+    elsif @speed != 0
+      puts "Отказано. Поезд движется!"
+    else
+      puts "Отказано, тип вагона не соответствует поезду!"
+    end
   end
 
   def detach
-    @number_of_wagons -= 1 if @speed == 0 && self.number_of_wagons > 0
+    @wagons.delete_at(-1) if @speed == 0 && @wagons.length > 0
   end
 
   # Может принимать маршрут следования (объект класса Route).
@@ -60,9 +66,9 @@ class Train
           if station.trains.include?(self) && station != @route.stations.last
             station.departure(self)
             @route.stations[index + 1].add_train(self)
-            puts "Следующая: #{@route.stations[index + 2].station_name}" unless @route.stations[index + 2].nil?
-            puts "Текущая: #{@route.stations[index + 1].station_name} <-- "
-            puts "Предыдущая: #{@route.stations[index].station_name}" unless @route.stations[index].nil?
+            print "Предыдущая: #{@route.stations[index].station_name} " unless @route.stations[index].nil?
+            print "|||Текущая: #{@route.stations[index + 1].station_name} <-- ||| "
+            print "Следующая: #{@route.stations[index + 2].station_name}\n" unless @route.stations[index + 2].nil?
             break
           end
         end
@@ -73,14 +79,50 @@ class Train
           if station.trains.include?(self) && station != @route.stations.first
             station.departure(self)
             @route.stations[index - 1].add_train(self)
-            puts "Следующая: #{@route.stations[index - 2].station_name}" unless @route.stations[index - 2].nil?
-            puts "Текущая: #{@route.stations[index - 1].station_name} <-- "
-            puts "Предыдущая: #{@route.stations[index].station_name}" unless @route.stations[index].nil?
+            print "Следующая: #{@route.stations[index].station_name}" unless @route.stations[index].nil?
+            print "|||Текущая: #{@route.stations[index - 1].station_name} <-- ||| "
+            print "Предыдущая: #{@route.stations[index - 2].station_name}\n" unless index - 2 < 0
             break
           end
         end
   end
 
+end
 
 
+# Создаем класс для пассажирского и грузового поездов
+
+class PassengerTrain < Train
+  def initialize(number, type = "passenger")
+    super
+  end
+end
+
+class CargoTrain < Train
+  def initialize(number, type = "cargo")
+    super
+  end
+end
+
+class Wagon
+
+  attr_reader :id, :type
+
+  def initialize
+    @id = self.object_id
+  end
+end
+
+class CargoWagon < Wagon
+  def initialize
+    super
+    @type = "cargo"
+  end
+end
+
+class PassengerWagon < Wagon
+  def initialize
+    super
+    @type = "passenger"
+  end
 end
