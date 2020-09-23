@@ -1,8 +1,11 @@
 # Класс Train (Поезд):
 
 # Возвращать предыдущую станцию, текущую, следующую, на основе маршрута
+require_relative 'manufacturer'
 
 class Train
+
+  include Manufacturer
 
   # Имеет номер (произвольная строка) и тип (грузовой, пассажирский) и количество
   # вагонов, эти данные указываются при создании экземпляра класса
@@ -10,7 +13,7 @@ class Train
 
   # Может возвращать количество вагонов
 
-  def initialize(number, type)
+  def initialize(number = '', type)
     @number = number
     @type = type
     @wagons = []
@@ -105,6 +108,9 @@ class CargoTrain < Train
 end
 
 class Wagon
+
+  include Manufacturer
+
 
   attr_reader :id, :type
 

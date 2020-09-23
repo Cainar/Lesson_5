@@ -4,12 +4,19 @@ class Station
 
   attr_reader :trains, :station_name
 
+  # метод класса, который позволит вывести все созданные станции
+  @@stations = []
+
+  def self.all
+    @@stations
+  end
+
   # Имеет название, которое указывается при ее создании
 
   def initialize(station_name)
     @station_name = station_name
     @trains = []
-
+    @@stations << self
   end
 
   # Может принимать поезда (по одному за раз)

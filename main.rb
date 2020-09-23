@@ -275,12 +275,14 @@ class InfoMenu < MainMenu
 
 end
 
+$rr = nil
 
 # запускает программу автоматически
 def start_program (rail_road = RailRoad.new())
   # тестовый seed
-  seed(rail_road)
-  MainMenu.new(rail_road).start_menu
+  $rr = rail_road
+  seed($rr)
+  MainMenu.new($rr).start_menu
 end
 
 start_program
