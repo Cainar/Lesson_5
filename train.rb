@@ -6,12 +6,22 @@ require_relative 'manufacturer'
 class Train
 
   include Manufacturer
+  include InstanceCounter
 
   # Имеет номер (произвольная строка) и тип (грузовой, пассажирский) и количество
   # вагонов, эти данные указываются при создании экземпляра класса
   attr_reader :speed, :wagons, :route, :number, :type
 
-  # Может возвращать количество вагонов
+  @@trains = {}
+
+  #создаем переменную класса для подсчета экземпляров
+  init_count
+
+
+  # метод класса, выводит поезд по номеру
+  def self.find(train_number)
+    @@trains.has_key?(train_number) ? @@trains[train_number] : nil
+  end
 
   def initialize(number = '', type)
     @number = number
@@ -19,6 +29,9 @@ class Train
     @wagons = []
     @speed = 0
     @route = nil
+    @@trains[number] = self
+
+    register_instance
   end
 
   # Может набирать скорость
@@ -96,12 +109,14 @@ end
 # Создаем класс для пассажирского и грузового поездов
 
 class PassengerTrain < Train
+  init_count
   def initialize(number, type = "passenger")
     super
   end
 end
 
 class CargoTrain < Train
+  init_count
   def initialize(number, type = "cargo")
     super
   end

@@ -7,11 +7,15 @@
 
 class Route
 
+  include InstanceCounter
+
 # --- point переименовал в station
 
   attr_reader :start_station, :end_station, :stations
   # Имеет начальную и конечную станцию, а также список промежуточных станций.
   # Начальная и конечная станции указываютсся при создании маршрута,
+
+  init_count
 
   def initialize (start_station, end_station)
     @start_station = start_station
@@ -19,6 +23,7 @@ class Route
     @stations = []
     @stations << @start_station
     @stations << @end_station
+    register_instance
   end
 
   # а промежуточные могут добавляться между ними.

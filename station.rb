@@ -1,11 +1,17 @@
+require_relative 'instanceCounter'
+
 # Класс Station (Станция):
 
 class Station
+
+  include InstanceCounter
 
   attr_reader :trains, :station_name
 
   # метод класса, который позволит вывести все созданные станции
   @@stations = []
+
+  init_count
 
   def self.all
     @@stations
@@ -17,6 +23,8 @@ class Station
     @station_name = station_name
     @trains = []
     @@stations << self
+
+    register_instance
   end
 
   # Может принимать поезда (по одному за раз)
