@@ -15,7 +15,8 @@ class Route
   # Имеет начальную и конечную станцию, а также список промежуточных станций.
   # Начальная и конечная станции указываютсся при создании маршрута,
 
-  init_count
+  #создаем переменную класса для подсчета экземпляров
+  instances
 
   def initialize (start_station, end_station)
     @start_station = start_station

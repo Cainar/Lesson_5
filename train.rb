@@ -4,24 +4,20 @@
 require_relative 'manufacturer'
 
 class Train
-
   include Manufacturer
   include InstanceCounter
 
   # Имеет номер (произвольная строка) и тип (грузовой, пассажирский) и количество
   # вагонов, эти данные указываются при создании экземпляра класса
   attr_reader :speed, :wagons, :route, :number, :type
-
   @@trains = {}
-
-  #создаем переменную класса для подсчета экземпляров
-  init_count
-
 
   # метод класса, выводит поезд по номеру
   def self.find(train_number)
     @@trains.has_key?(train_number) ? @@trains[train_number] : nil
   end
+
+  instances
 
   def initialize(number = '', type)
     @number = number
@@ -30,7 +26,6 @@ class Train
     @speed = 0
     @route = nil
     @@trains[number] = self
-
     register_instance
   end
 
@@ -49,7 +44,6 @@ class Train
   # Может прицеплять/отцеплять вагоны (по одному вагону за операцию, метод
   # просто увеличивает или уменьшает количество вагонов). Прицепка/отцепка
   # вагонов может осуществляться только если поезд не движется.
-
   def attach(wagon)
     if @type == wagon.type && @speed == 0
       @wagons << wagon
@@ -67,7 +61,6 @@ class Train
   # Может принимать маршрут следования (объект класса Route).
   # При назначении маршрута поезду, поезд автоматически помещается на первую
   #   станцию в маршруте.
-
   def set_route(route)
     @route = route
     @route.start_station.add_train(self) if !@route.start_station.trains.include?(self)
@@ -76,7 +69,6 @@ class Train
 
   # Может перемещаться между станциями, указанными в маршруте. Перемещение
   #   возможно вперед и назад, но только на 1 станцию за раз.
-
   def move_forward
         @route.stations.each_with_index do |station, index|
           if station.trains.include?(self) && station != @route.stations.last
@@ -109,23 +101,21 @@ end
 # Создаем класс для пассажирского и грузового поездов
 
 class PassengerTrain < Train
-  init_count
+  instances
   def initialize(number, type = "passenger")
     super
   end
 end
 
 class CargoTrain < Train
-  init_count
+  instances
   def initialize(number, type = "cargo")
     super
   end
 end
 
 class Wagon
-
   include Manufacturer
-
 
   attr_reader :id, :type
 
