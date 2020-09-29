@@ -14,7 +14,7 @@ class Station
     @@stations
   end
 
-  # Имеет название, которое указывается при ее создании
+  # объявляется счетчик
   instances
 
   def initialize(station_name)

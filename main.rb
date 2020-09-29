@@ -1,5 +1,4 @@
-
-
+require_relative 'validation'
 require_relative 'station'
 require_relative 'route'
 require_relative 'train'
@@ -14,10 +13,10 @@ require_relative 'railRoad'
 
 # общий класс гавного меню
 class MainMenu
+  include Validation
+  require 'csv'
 
   attr_reader :choice, :menu_items, :menu
-
-  require 'csv'
 
 # road хранит все объекты в массивах
   def initialize(road)
@@ -41,23 +40,24 @@ class MainMenu
       @@menu.make_choice
       case @@menu.choice
         when "1"
-          @@menu = CreateMenu.new()
-          @@menu.make_choice
-          @@menu.start_menu
+          load_menu(CreateMenu)
         when "2"
-          @@menu = ManipulationMenu.new()
-          @@menu.make_choice
-          @@menu.start_menu
+          load_menu(ManipulationMenu)
         when "3"
-          @@menu = InfoMenu.new()
-          @@menu.make_choice
-          @@menu.start_menu
+          load_menu(InfoMenu)
         when "0"
           break
         else
           next
       end
     end while true
+  end
+
+  # загружает необходимое меню
+  def load_menu(class_menu)
+    @@menu = class_menu.new
+    @@menu.make_choice
+    @@menu.start_menu
   end
 
   #Эти методы напрямую не вызываются, но могут использоваться подклассами
@@ -69,7 +69,8 @@ class MainMenu
     @@menu_items = (CSV.read(@filename).map { |row| row[@col] }).compact
   end
 
-# формирует коненый вид меню и добавляет пункт для выхода
+
+# формирует конечный вид меню и добавляет пункт для выхода
   def stuff
     seed_menu
     puts "Выберите необходимый пункт:"
@@ -97,37 +98,77 @@ class CreateMenu < MainMenu
       case @@menu.choice
 
         when "1"
-          print "Введите название станции: "
-          @name_station = gets.chomp
-          @@road.add_s(Station.new(@name_station))
+          loop do
+            print "Введите название станции: "
+            @name_station = gets.chomp
+            if valid?(@name_station, "more", 16)
+              @@road.add_s(Station.new(@name_station))
+              break
+            else
+              p "СТАНЦИЯ НЕ СОЗДАНА"
+              p err_title("length", "more", 16)
+              p err_title("nil")
+            end
+          end
           @@menu.make_choice
 
         when "2"
-          print "Введите номер поезда: "
-          @train_number = gets.chomp
-          puts "Укажите тип поезда.
-           - 1 - Cargo;
-           - 2 - Passenger"
-          @train_type = gets.chomp
+          loop do
+            print "Введите номер поезда: "
+            @train_number = gets.chomp
+            if valid?(@train_number,
+                      "less",
+                      @train_number.include?('-') ? 6 : 5,
+                      /^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i)
+              loop do
+                puts "Укажите тип поезда.
+                      - 1 - Cargo;
+                      - 2 - Passenger"
+                @train_type = gets.chomp
+                if valid?(@train_type,
+                          "more",
+                          1,
+                          /^[1-2]{1}$/)
+                break
+                else
+                  p err_title("length", "more", 1)
+                  p err_title("nil")
+                  p err_title("format", nil, nil, '/^[1-2]{1}$/')
+                  p "необходимо ввести 1 или 2"
+                end
+              end
+
+              break
+            else
+              p err_title("length", "more", 5)
+              p err_title("nil")
+              p err_title("format", nil, nil, '/^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i')
+              p "ПОЕЗД НЕ СОЗДАН"
+            end
+          end
           case @train_type
             when "1" then @@road.add_t(CargoTrain.new(@train_number))
             when "2" then @@road.add_t(PassengerTrain.new(@train_number))
             else next
           end
+          puts "Создан ПОЕЗД №: #{@@road.trains.last.number}"
           @@menu.make_choice
 
         when "3"
-          #@check_route_choice = []
           @@road.stations.each_with_index do |station, index|
-            puts "- #{index} - #{station.station_name}"
-            #@check_route_choice << index.to_s
+            puts "\t#{index}-#{station.station_name}"
           end
           print "Выберите начальную станцию: "
           @start_st = gets.chomp.strip.to_i
           print "Выберите конечную станцию: "
           @end_st = gets.chomp.strip.to_i
-          @@road.add_r(Route.new(@@road.stations[@start_st], @@road.stations[@end_st])) if !@start_st.nil? && !@end_st.nil?
-
+          unless
+            @@road.stations[@start_st].nil? || @@road.stations[@end_st].nil?
+            @@road.add_r(Route.new(@@road.stations[@start_st], @@road.stations[@end_st]))
+            puts "создан маршрут #{@@road.routes.last}"
+          else
+            puts "Указанной станции не существует, МАРШРУТ НЕ СОЗДАН"
+          end
           @@menu.make_choice
 
         when "0"
@@ -257,18 +298,15 @@ class InfoMenu < MainMenu
   def start_menu
     begin
       case @@menu.choice
-        when "1"
-
-          @@road.stations.each_with_index do |station, index|
-            puts "- #{index} - #{station.station_name}  #{station.show_trains_by_type}"
-          end
-
-          break
-
-        when "0"
-          break
-        else
-          @@menu.make_choice
+      when "1"
+        @@road.stations.each_with_index do |station, index|
+          puts "- #{index} - #{station.station_name}  #{station.show_trains_by_type}"
+        end
+        break
+      when "0"
+        break
+      else
+        @@menu.make_choice
       end
     end while true
   end
