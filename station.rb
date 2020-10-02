@@ -51,4 +51,10 @@ class Station
   def departure(train)
     @trains.delete(train)
   end
+
+  def each_train
+    @trains.each do |train|
+      yield(train)
+    end
+  end
 end

@@ -6,7 +6,6 @@
 # Может выводить список всех станций по-порядку от начальной до конечной
 
 class Route
-
   include InstanceCounter
 
 # --- point переименовал в station

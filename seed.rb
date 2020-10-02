@@ -44,12 +44,12 @@ def seed(rail_road)
 
   # cargo passenger
 
-  rail_road.trains << CargoTrain.new('0001')
-  rail_road.trains << CargoTrain.new('0002')
-  rail_road.trains << CargoTrain.new('0003')
-  rail_road.trains << PassengerTrain.new('0004')
-  rail_road.trains << PassengerTrain.new('0005')
-  rail_road.trains << PassengerTrain.new('0006')
+  rail_road.trains << CargoTrain.new('T01-1C')
+  rail_road.trains << CargoTrain.new('T02-1C')
+  rail_road.trains << CargoTrain.new('T01-2C')
+  rail_road.trains << PassengerTrain.new('T01-1P')
+  rail_road.trains << PassengerTrain.new('T02-1P')
+  rail_road.trains << PassengerTrain.new('T01-2P')
 
   rail_road.trains[0].set_route(rail_road.routes[0])
   rail_road.trains[1].set_route(rail_road.routes[1])
@@ -59,19 +59,53 @@ def seed(rail_road)
   rail_road.trains[5].set_route(rail_road.routes[2])
 
   #wagons
-  rail_road.add_wagon(CargoWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(CargoWagon.new())
-  rail_road.add_wagon(CargoWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(CargoWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(CargoWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(PassengerWagon.new())
-  rail_road.add_wagon(CargoWagon.new())
+  rail_road.add_wagon(CargoWagon.new(3.0))
+  rail_road.add_wagon(PassengerWagon.new(25))
+  rail_road.add_wagon(CargoWagon.new(1.5))
+  rail_road.add_wagon(CargoWagon.new(1.0))
+  rail_road.add_wagon(PassengerWagon.new(10))
+  rail_road.add_wagon(CargoWagon.new(3.0))
+  rail_road.add_wagon(PassengerWagon.new(30))
+  rail_road.add_wagon(CargoWagon.new(3.0))
+  rail_road.add_wagon(PassengerWagon.new(30))
+  rail_road.add_wagon(PassengerWagon.new(25))
+  rail_road.add_wagon(PassengerWagon.new(10))
+  rail_road.add_wagon(CargoWagon.new(2.5))
 
+  rail_road.trains[0].attach(rail_road.wagons[0])
+  rail_road.trains[3].attach(rail_road.wagons[1])
+  rail_road.trains[0].attach(rail_road.wagons[2])
+  rail_road.trains[0].attach(rail_road.wagons[3])
+  rail_road.trains[3].attach(rail_road.wagons[4])
+  rail_road.trains[0].attach(rail_road.wagons[5])
+  rail_road.trains[3].attach(rail_road.wagons[6])
+  rail_road.trains[1].attach(rail_road.wagons[7])
+  rail_road.trains[3].attach(rail_road.wagons[8])
+  rail_road.trains[4].attach(rail_road.wagons[9])
+  rail_road.trains[4].attach(rail_road.wagons[10])
+  rail_road.trains[1].attach(rail_road.wagons[11])
+
+  rail_road.wagons[0].fill_wagon(0.1)
+  rail_road.wagons[1].take_seat
+  rail_road.wagons[1].take_seat
+  rail_road.wagons[2].fill_wagon(0.2)
+  rail_road.wagons[3].fill_wagon(0.3)
+  rail_road.wagons[4].take_seat
+  rail_road.wagons[4].take_seat
+  rail_road.wagons[4].take_seat
+  rail_road.wagons[5].fill_wagon(0.4)
+  rail_road.wagons[6].take_seat
+  rail_road.wagons[7].fill_wagon(0.56)
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[8].take_seat
+  rail_road.wagons[9].take_seat
+  rail_road.wagons[10].take_seat
+  rail_road.wagons[11].fill_wagon(0.49)
 
 end
 

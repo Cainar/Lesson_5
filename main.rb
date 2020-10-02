@@ -155,6 +155,19 @@ class CreateMenu < MainMenu
           @@menu.make_choice
 
         when "3"
+          print "Укажите тип поезда (1-для грузового, 2-для пассажирского): "
+
+          case gets.chomp
+          when "1"
+            print "укажите объем: "
+            @@road.add_wagon(CargoWagon.new(gets.chomp.to_f))
+          when "2"
+            print "укажите количество мест: "
+            @@road.add_wagon(PassengerWagon.new(gets.chomp.to_i))
+          end
+          @@menu.make_choice
+
+        when "4"
           @@road.stations.each_with_index do |station, index|
             puts "\t#{index}-#{station.station_name}"
           end
@@ -299,10 +312,49 @@ class InfoMenu < MainMenu
     begin
       case @@menu.choice
       when "1"
-        @@road.stations.each_with_index do |station, index|
-          puts "- #{index} - #{station.station_name}  #{station.show_trains_by_type}"
+        @@road.stations.each do |station|
+          puts "Station: #{station.station_name}"
+          station.each_train do |train|
+            puts "<[_-_-_]://. train: #{train.number}, type: #{train.type}, number of wagons: #{train.wagons.size}"
+            train.each_wagon do |wagon|
+              if wagon.type == "cargo"
+                puts "           .\\______/. wagon: #{wagon.id}-#{wagon.type}, volume: #{wagon.show_volume}, threight: #{wagon.show_freight}"
+              elsif wagon.type == "passenger"
+                puts "           .|_0__0_|. wagon: #{wagon.id}-#{wagon.type}, free: #{wagon.show_free_seats}, taken: #{wagon.show_taken_seats}"
+              end
+            end
+          end
         end
-        break
+      @@menu.make_choice
+
+      when "2"
+        @@road.stations.each_with_index do |station, index|
+            puts "\t#{index}-#{station.station_name}"
+        end
+        print "Выберите начальную станцию: "
+        @current_station = @@road.stations[gets.chomp.strip.to_i]
+        puts "Station: #{@current_station.station_name}"
+        @current_station.each_train do |train|
+          puts "<[_-_-_]://. train: #{train.number}, type: #{train.type}, number of wagons: #{train.wagons.size}"
+        end
+      @@menu.make_choice
+
+      when "3"
+        @@road.trains.each_with_index do |train, index|
+          puts "- #{index} - #{train.number} - #{train.type}"
+        end
+        print "Выберите поезд: "
+        @current_train = @@road.trains[gets.chomp.to_i]
+        puts "<[_-_-_]://. train: #{@current_train.number}, type: #{@current_train.type}, number of wagons: #{@current_train.wagons.size}"
+        @current_train.each_wagon do |wagon|
+          if wagon.type == "cargo"
+            puts "           .\\______/. wagon: #{wagon.id}-#{wagon.type}, volume: #{wagon.show_volume}, threight: #{wagon.show_freight}"
+          elsif wagon.type == "passenger"
+            puts "           .|_0__0_|. wagon: #{wagon.id}-#{wagon.type}, free: #{wagon.show_free_seats}, taken: #{wagon.show_taken_seats}"
+          end
+        end
+      @@menu.make_choice
+
       when "0"
         break
       else

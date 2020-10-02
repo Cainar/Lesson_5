@@ -2,6 +2,7 @@
 
 # Возвращать предыдущую станцию, текущую, следующую, на основе маршрута
 require_relative 'manufacturer'
+require_relative "seat"
 
 class Train
   include Manufacturer
@@ -95,6 +96,11 @@ class Train
         end
   end
 
+  def each_wagon
+    @wagons.each do |wagon|
+      yield(wagon)
+    end
+  end
 end
 
 
@@ -114,26 +120,96 @@ class CargoTrain < Train
   end
 end
 
+# отдельный класс вагон
+
 class Wagon
   include Manufacturer
 
   attr_reader :id, :type
 
-  def initialize
+  def initialize(size)
     @id = self.object_id
   end
 end
 
+# грузовой вагон
 class CargoWagon < Wagon
-  def initialize
+  attr_reader :volume, :cargo
+  #DEFAUT_VOLUME = 1.0
+
+  def initialize(size)
     super
+    @volume = size
+    @cargo = 0.0
     @type = "cargo"
   end
+
+  def fill_wagon(cargo)
+    #заполняет объем вагона, диапазон значений 0.0 - 1.0, 1.0 означает 100%
+    if cargo.between?(0.0, @volume)
+      @cargo += cargo
+      @volume -= @cargo
+    end
+  end
+
+  def show_volume
+    # показывает доступный доступный объем
+    @volume.round(2)
+  end
+
+  def show_freight
+    # показывает объем груза
+    @cargo.round(2)
+  end
+
+  private
+
+  attr_writer :volume, :cargo
 end
 
+# пассажирский вагон
 class PassengerWagon < Wagon
-  def initialize
+  # массив мест в вагоне, хранит места
+  attr_accessor :seats
+  #количесвто мест для базовой модификации
+  #DEFAULT_SEATS_NUMBER = 10
+
+  def initialize(size)
     super
     @type = "passenger"
+    @seats = []
+    #базовая модификация на 10 мест
+    # заполняем вагон местами в базовой модификации (взял от балды)
+    #default_version(DEFAULT_SEATS_NUMBER)
+    default_version(size)
+  end
+
+  # заполняем вагон местами
+  def default_version(seats_number)
+    seats_number.times { @seats << Seat.new }
+  end
+
+  # занимает место по ID места
+  def take_seat
+    find_seat = lambda { |seat| seat.occupancy == false }
+    @seats.select(&find_seat).first.take unless @seats.select(&find_seat).first.nil?
+  end
+
+  # освобождает по ID места
+  def make_room
+    find_seat = lambda { |seat| seat.occupancy == true }
+    @seats.select(&find_seat).first.leave unless @seats.select(&find_seat).first.nil?
+  end
+
+  # показывает количество свободных мест
+  def show_free_seats
+    free_seat = lambda { |occupancy| occupancy == false}
+    @seats.map(&:occupancy).select(&free_seat).size
+  end
+
+  #показывает количество занятых мест
+  def show_taken_seats
+    free_seat = lambda { |occupancy| occupancy == true}
+    @seats.map(&:occupancy).select(&free_seat).size
   end
 end
