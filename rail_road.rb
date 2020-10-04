@@ -1,5 +1,6 @@
-class RailRoad
+# frozen_string_literal: true
 
+class RailRoad
   attr_reader :stations, :trains, :routes, :wagons
 
   def initialize
@@ -25,5 +26,11 @@ class RailRoad
     @wagons << wagon
   end
 
-
+  def show_routes_list
+    @routes.each_with_index do |route, index|
+      puts "- #{index} - #{route.route_id} " \
+           "|#{route.start_station.station_name} " \
+           " - #{route.end_station.station_name}|"
+    end
+  end
 end

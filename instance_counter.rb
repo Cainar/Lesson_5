@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InstanceCounter
   def self.included(receiver)
     receiver.extend         ClassMethods
@@ -11,8 +13,6 @@ module InstanceCounter
       @counter ||= 0
     end
   end
-
-
 
   module InstanceMethods
     protected

@@ -1,51 +1,32 @@
-# Класс Route (Маршрут):
+# frozen_string_literal: true
 
-
-# Может добавлять промежуточную станцию в список
-
-# Может выводить список всех станций по-порядку от начальной до конечной
-
+# class for Routes
 class Route
   include InstanceCounter
 
-# --- point переименовал в station
-
-  attr_reader :start_station, :end_station, :stations
-  # Имеет начальную и конечную станцию, а также список промежуточных станций.
-  # Начальная и конечная станции указываютсся при создании маршрута,
-
-  #создаем переменную класса для подсчета экземпляров
+  attr_reader :start_station, :end_station, :stations, :route_id
+  # init register
   instances
 
-  def initialize (start_station, end_station)
+  def initialize(start_station, end_station)
+    @route_id = "R-#{rand(10)}#{rand(10)}"
     @start_station = start_station
-    @end_station  = end_station
+    @end_station = end_station
     @stations = []
     @stations << @start_station
     @stations << @end_station
     register_instance
   end
 
-  # а промежуточные могут добавляться между ними.
-
+  # add way station
   def add_station(station)
     @stations.shift && @stations.pop
     @stations << station
     @stations.unshift(@start_station) && @stations.push(@end_station)
   end
 
-  # Может удалять промежуточную станцию из списка
-  #--- оператор === заменил на ==
-
+  # delete way station
   def delete_station(station)
     @stations.delete(station) unless station == @stations.first || station == @stations.last
   end
-
-# --- закоментировал, есть attr_reader на stations
-=begin
-  def show_route
-    @stations.each.with_index(1) { |station, index| puts "Станция - #{index}: #{station.station_name}" }
-  end
-=end
-
 end

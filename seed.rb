@@ -1,6 +1,6 @@
-  require_relative "main"
+# frozen_string_literal: true
 
-  # Тестовые данные
+# Тестовые данные
 def seed(rail_road)
   rail_road.stations << Station.new('Moscow')
   rail_road.stations << Station.new('Arkhangelsk')
@@ -21,9 +21,9 @@ def seed(rail_road)
   rail_road.stations << Station.new('Yaroslavl')
   rail_road.stations << Station.new('Omsk')
 
-  rail_road.routes << Route.new(rail_road.stations[0],rail_road.stations[5])
-  rail_road.routes << Route.new(rail_road.stations[6],rail_road.stations[11])
-  rail_road.routes << Route.new(rail_road.stations[12],rail_road.stations[17])
+  rail_road.routes << Route.new(rail_road.stations[0], rail_road.stations[5])
+  rail_road.routes << Route.new(rail_road.stations[6], rail_road.stations[11])
+  rail_road.routes << Route.new(rail_road.stations[12], rail_road.stations[17])
 
   rail_road.routes[0].add_station(rail_road.stations[1])
   rail_road.routes[0].add_station(rail_road.stations[2])
@@ -40,10 +40,7 @@ def seed(rail_road)
   rail_road.routes[2].add_station(rail_road.stations[15])
   rail_road.routes[2].add_station(rail_road.stations[16])
 
-
-
   # cargo passenger
-
   rail_road.trains << CargoTrain.new('T01-1C')
   rail_road.trains << CargoTrain.new('T02-1C')
   rail_road.trains << CargoTrain.new('T01-2C')
@@ -51,14 +48,14 @@ def seed(rail_road)
   rail_road.trains << PassengerTrain.new('T02-1P')
   rail_road.trains << PassengerTrain.new('T01-2P')
 
-  rail_road.trains[0].set_route(rail_road.routes[0])
-  rail_road.trains[1].set_route(rail_road.routes[1])
-  rail_road.trains[2].set_route(rail_road.routes[2])
-  rail_road.trains[3].set_route(rail_road.routes[0])
-  rail_road.trains[4].set_route(rail_road.routes[1])
-  rail_road.trains[5].set_route(rail_road.routes[2])
+  rail_road.trains[0].add_route(rail_road.routes[0])
+  rail_road.trains[1].add_route(rail_road.routes[1])
+  rail_road.trains[2].add_route(rail_road.routes[2])
+  rail_road.trains[3].add_route(rail_road.routes[0])
+  rail_road.trains[4].add_route(rail_road.routes[1])
+  rail_road.trains[5].add_route(rail_road.routes[2])
 
-  #wagons
+  # wagons
   rail_road.add_wagon(CargoWagon.new(3.0))
   rail_road.add_wagon(PassengerWagon.new(25))
   rail_road.add_wagon(CargoWagon.new(1.5))
@@ -106,7 +103,4 @@ def seed(rail_road)
   rail_road.wagons[9].take_seat
   rail_road.wagons[10].take_seat
   rail_road.wagons[11].fill_wagon(0.49)
-
 end
-
-

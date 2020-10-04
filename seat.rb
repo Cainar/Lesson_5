@@ -1,23 +1,31 @@
-#создает место пассажирского вагона
+# frozen_string_literal: true
 
+# сreate passenger a seat in the wagon
 class Seat
-  # показывает занято ли место или нет.
+  # show if seat have taken
   attr_accessor :occupancy
-  # что-то вроде уникального ключа,  на всякий случай.
-  attr_reader :id
+  # pirimary key
+  attr_reader :seat_id
 
   def initialize
-    @id = self.object_id.to_s
+    @seat_id = "#{random_letter}#{rand(9)}#{rand(9)}"
     @occupancy = false
   end
 
-  # занять место
+  # take seat
   def take
     @occupancy = true
   end
 
-  # освободить место
+  # take room
   def leave
     @occupancy = false
+  end
+
+  protected
+
+  # create random letter
+  def random_letter
+    rand(10...36).to_s(36)
   end
 end
