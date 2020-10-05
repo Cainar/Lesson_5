@@ -12,11 +12,15 @@ class MainMenu
   include Validation
   require 'csv'
 
-  attr_reader :choice, :menu_items, :menu
+  attr_reader :choice, :menu_items
+
+  class << self
+    attr_accessor :menu, :road
+  end
 
   # road keeps data in arrays
   def initialize(road)
-    @@road = road
+    self.class.road = road
     @filename = 'mainMenu.csv'
     @col = 0
   end
@@ -24,15 +28,15 @@ class MainMenu
   # keep user choice
   def make_choice
     stuff
-    @choice = gets.chomp.strip
+    @choice = user_input.strip
   end
 
   # start menu
   def start_menu
     loop do
-      @@menu = self
-      @@menu.make_choice
-      case @@menu.choice
+      self.class.menu = self
+      self.class.menu.make_choice
+      case self.class.menu.choice
       when '1'
         load_menu(CreateMenu)
       when '2'
@@ -42,30 +46,28 @@ class MainMenu
       when '0'
         break
       end
-      break unless true
     end
   end
 
   # load required menu
   def load_menu(class_menu)
-    puts
-    @@menu = class_menu.new
-    @@menu.make_choice
-    @@menu.start_menu
+    self.class.menu = class_menu.new
+    self.class.menu.make_choice
+    self.class.menu.start_menu
   end
 
   protected
 
   # read file with menu items
   def seed_menu
-    @@menu_items = (CSV.read(@filename).map { |row| row[@col] }).compact
+    @menu_items = (CSV.read(@filename).map { |row| row[@col] }).compact
   end
 
   # drawing menu
   def stuff
     seed_menu
     puts 'Выберите необходимый пункт:'
-    @@menu_items.each.with_index(1) do |item, index|
+    @menu_items.each.with_index(1) do |item, index|
       puts "Введите #{index}, чтобы #{item}"
     end
     if self.class.to_s == 'MainMenu'
@@ -74,8 +76,14 @@ class MainMenu
       puts 'Введите 0, чтобы вернуться в предыдущее меню'
     end
   end
+
+  def user_input(message = '')
+    print message
+    gets.chomp
+  end
 end
 
+# make railroad objects
 class CreateMenu < MainMenu
   def initialize
     @filename = 'mainMenu.csv'
@@ -84,106 +92,104 @@ class CreateMenu < MainMenu
 
   def start_menu
     loop do
-      case @@menu.choice
+      case self.class.superclass.menu.choice
       when '1'
         loop do
-          print 'Введите название станции: '
-          @name_station = gets.chomp
+          @name_station = user_input('Введите название станции: ')
           if valid?(@name_station, 'more', 16)
-            @@road.add_s(Station.new(@name_station))
+            self.class.superclass.road.add_s(Station.new(@name_station))
             break
           else
-            p 'СТАНЦИЯ НЕ СОЗДАНА'
-            p err_title('length', 'more', 16)
-            p err_title('nil')
+            puts 'СТАНЦИЯ НЕ СОЗДАНА'
+            puts err_title('length', 'more', 16)
+            puts err_title('nil')
           end
         end
-        @@menu.make_choice
 
       when '2'
         loop do
-          print 'Введите номер поезда: '
-          @train_number = gets.chomp
+          @train_number = user_input('Введите номер поезда: ')
           if valid?(@train_number,
                     'less',
                     @train_number.include?('-') ? 6 : 5,
                     /^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i)
             loop do
-              puts "Укажите тип поезда.
-                      - 1 - Cargo;
-                      - 2 - Passenger"
-              @train_type = gets.chomp
+              @train_type = user_input("Укажите тип поезда.\n" \
+                                       "- 1 - Cargo;\n" \
+                                       "- 2 - Passenger\n")
               if valid?(@train_type,
                         'more',
                         1,
                         /^[1-2]{1}$/)
                 break
               else
-                p err_title('length', 'more', 1)
-                p err_title('nil')
-                p err_title('format', nil, nil, '/^[1-2]{1}$/')
-                p 'необходимо ввести 1 или 2'
+                puts err_title('length', 'more', 1)
+                puts err_title('nil')
+                puts err_title('format', nil, nil, '/^[1-2]{1}$/')
+                puts 'необходимо ввести 1 или 2'
               end
             end
-
             break
           else
-            p err_title('length', 'more', 5)
-            p err_title('nil')
-            p err_title('format', nil, nil, '/^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i')
-            p 'ПОЕЗД НЕ СОЗДАН'
+            puts err_title('length', 'more', 5)
+            puts err_title('nil')
+            puts err_title(
+              'format', nil, nil, '/^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i'
+            )
+            puts 'ПОЕЗД НЕ СОЗДАН'
           end
         end
         case @train_type
-        when '1' then @@road.add_t(CargoTrain.new(@train_number))
-        when '2' then @@road.add_t(PassengerTrain.new(@train_number))
+        when '1' then self.class.superclass.road.add_t(
+          CargoTrain.new(@train_number)
+        )
+        when '2' then self.class.superclass.road.add_t(
+          PassengerTrain.new(@train_number)
+        )
         else next
         end
-        puts "Создан ПОЕЗД №: #{@@road.trains.last.number}"
-        @@menu.make_choice
+        puts "Создан ПОЕЗД №: #{self.class.superclass.road.trains.last.number}"
 
       when '3'
-        print 'Укажите тип поезда (1-для грузового, 2-для пассажирского): '
-
-        case gets.chomp
+        case user_input("Укажите тип вагона\n1 - для грузового,\n" \
+                                            '2 - для пассажирского: ')
         when '1'
-          print 'укажите объем: '
-          @@road.add_wagon(CargoWagon.new(gets.chomp.to_f))
+          self.class.superclass.road.add_wagon(
+            CargoWagon.new(user_input('укажите объем: ').to_f)
+          )
         when '2'
-          print 'укажите количество мест: '
-          @@road.add_wagon(PassengerWagon.new(gets.chomp.to_i))
+          self.class.superclass.road.add_wagon(
+            PassengerWagon.new(user_input('укажите количество мест: ').to_i)
+          )
         end
-        @@menu.make_choice
 
       when '4'
-        @@road.stations.each_with_index do |station, index|
+        self.class.superclass.road.stations.each_with_index do |station, index|
           puts "\t#{index}-#{station.station_name}"
         end
-        print 'Выберите начальную станцию: '
-        @start_st = gets.chomp.strip.to_i
-        print 'Выберите конечную станцию: '
-        @end_st = gets.chomp.strip.to_i
-        if @@road.stations[@start_st].nil? || @@road.stations[@end_st].nil?
+        @start_st = user_input('Выберите начальную станцию: ').strip.to_i
+        @end_st = user_input('Выберите конечную станцию: ').strip.to_i
+        if self.class.superclass.road.stations[@start_st].nil? ||
+           self.class.superclass.road.stations[@end_st].nil?
           puts 'Указанной станции не существует, МАРШРУТ НЕ СОЗДАН'
         else
-          @@road.add_r(Route.new(
-                         @@road.stations[@start_st],
-                         @@road.stations[@end_st]
-                       ))
-          puts "создан маршрут #{@@road.routes.last}"
+          self.class.superclass.road.add_r(
+            Route.new(self.class.superclass.road.stations[@start_st],
+                      self.class.superclass.road.stations[@end_st])
+          )
+          puts "создан маршрут #{self.class.superclass.road.routes.last}"
         end
-        @@menu.make_choice
-
       when '0'
         break
       else
-        @@menu.make_choice
+        break
       end
-      break unless true
+      self.class.superclass.menu.make_choice
     end
   end
 end
 
+# change existing objects
 class ManipulationMenu < MainMenu
   def initialize
     @filename = 'mainMenu.csv'
@@ -192,99 +198,82 @@ class ManipulationMenu < MainMenu
 
   def start_menu
     loop do
-      case @@menu.choice
-
+      case self.class.superclass.menu.choice
       when '1'
-
-        @@road.trains.each_with_index do |train, index|
+        self.class.superclass.road.trains.each_with_index do |train, index|
           puts "- #{index} - #{train.number} - #{train.type}"
         end
-        print 'Выберите поезд: '
-        @train = gets.chomp.to_i
+        @train = user_input('Выберите поезд: ').to_i
+        self.class.superclass.road.show_routes_list
 
-        @@road.show_routes_list
-        print 'Выберите маршрут: '
-        @route = gets.chomp.to_i
-
-        @@road.trains[@train].add_route(@@road.routes[@route])
-        @@menu.make_choice
+        @route = user_input('Выберите маршрут: ').to_i
+        self.class.superclass.road.trains[@train].add_route(
+          self.class.superclass.road.routes[@route]
+        )
 
       when '2'
-        @@road.trains.each_with_index do |train, index|
-          puts "- #{index} - #{train.number} - #{train.type}"
-        end
-        print 'Выберите поезд: '
-        @train = gets.chomp.to_i
-        puts "0 - чтобы отцепить вагон\n1 - чтобы прицепить вагон"
-        @action = gets.chomp
+        trains_list(self.class.superclass.road)
+        @train = user_input('Выберите поезд: ').to_i
+        @action = user_input("\n0 - чтобы отцепить вагон\n" \
+                               "1 - чтобы прицепить вагон\n")
         case @action
         when '0'
-          @@road.trains[@train].detach
+          self.class.superclass.road.trains[@train].detach
         when '1'
-          @@road.wagons.each_with_index do |wagon, index|
-            puts "- #{index} - Wagon: #{wagon.id} - type: #{wagon.type}"
-          end
-          print 'Укажите индекс вагона: '
-          @wagon_index = gets.chomp.to_i
-          @@road.trains[@train].attach(@@road.wagons[@wagon_index])
+          wagons_list(self.class.superclass.road)
+          @wagon_index = user_input('Укажите индекс вагона: ').to_i
+          self.class.superclass.road.trains[@train].attach(
+            self.class.superclass.road.wagons[@wagon_index]
+          )
         else next
         end
-        @@menu.make_choice
 
       when '3'
-        @@road.show_routes_list
-        print 'Выберите маршрут: '
-        @route = gets.chomp.to_i
-
-        puts "0 - чтобы удалить станцию\n1 - чтобы добавить станцию"
-        @action = gets.chomp
-
+        self.class.superclass.road.show_routes_list
+        @route = user_input('Выберите маршрут: ').to_i
+        @action = user_input("\n0 - чтобы удалить станцию\n" \
+                               '1 - чтобы добавить станцию')
         case @action
         when '0'
-          @@road.routes[@route].stations.each_with_index do |station, index|
-            puts "- #{index} - #{station.station_name}"
-          end
-          puts 'Выберите станцию'
-          @station_index = gets.chomp.to_i
-          @@road.routes[@route].delete_station(@@road.routes[@route]
-            .stations[@station_index])
+          stations_list(self.class.superclass.road, @route)
+          @station_index = user_input("\nВыберите станцию\n").to_i
+          self.class.superclass.road.routes[@route].delete_station(
+            self.class.superclass.road.routes[@route].stations[@station_index]
+          )
         when '1'
-          @@road.stations.each_with_index do |station, index|
+          self.class.superclass.road.stations
+              .each_with_index do |station, index|
             puts "- #{index} - #{station.station_name}"
           end
-          puts 'Выберите станцию'
-          @station_index = gets.chomp.to_i
-          @@road.routes[@route].add_station(@@road.stations[@station_index])
+          @station_index = user_input("\nВыберите станцию\n").to_i
+          self.class.superclass.road.routes[@route].add_station(
+            self.class.superclass.road.stations[@station_index]
+          )
         else next
         end
-        @@menu.make_choice
 
       when '4'
-        @@road.trains.each_with_index do |train, index|
-          puts "- #{index} - #{train.number} - #{train.type}"
-        end
-        print 'Выберите поезд: '
-        @train = gets.chomp.to_i
-        puts "0 - чтобы переместить поезд вперед\n" \
-             '1 - чтобы переместить поезд назад'
-        @action = gets.chomp
-
+        trains_list(self.class.superclass.road)
+        @train = user_input('Выберите поезд: ').to_i
+        @action = user_input("0 - чтобы переместить поезд вперед\n" \
+                             "1 - чтобы переместить поезд назад\n")
         case @action
-        when '0' then @@road.trains[@train].move_forward
-        when '1' then @@road.trains[@train].move_backward
+        when '0' then self.class.superclass.road.trains[@train].move
+        when '1' then self.class.superclass.road.trains[@train].move('back')
         else next
         end
-        @@menu.make_choice
 
       when '0'
         break
       else
-        @@menu.make_choice
+        break
       end
+      self.class.superclass.menu.make_choice
     end
   end
 end
 
+# output on screen
 class InfoMenu < MainMenu
   def initialize
     @filename = 'mainMenu.csv'
@@ -293,80 +282,97 @@ class InfoMenu < MainMenu
 
   def start_menu
     loop do
-      case @@menu.choice
+      case self.class.superclass.menu.choice
       when '1'
-        @@road.stations.each do |station|
+        self.class.superclass.road.stations.each do |station|
           puts "Station: #{station.station_name}"
           station.each_train do |train|
-            puts "<[_-_-_]://. train: #{train.number}, type: #{train.type}, " \
-                 "number of wagons: #{train.wagons.size}"
+            show_train_on_station(train)
             train.each_wagon do |wagon|
-              if wagon.type == 'cargo'
-                puts "           .\\_____/. wagon: #{wagon.id}-#{wagon.type}," \
-                     " volume: #{wagon.show_volume}, " \
-                     "threight: #{wagon.show_freight}"
-              elsif wagon.type == 'passenger'
-                puts "           .|_0__0_|. wagon: #{wagon.id}-#{wagon.type}," \
-                     " free: #{wagon.show_free_seats}, " \
-                     "taken: #{wagon.show_taken_seats}"
-              end
+              show_wagons_by_type(wagon)
             end
           end
         end
-        @@menu.make_choice
-
       when '2'
-        @@road.stations.each_with_index do |station, index|
-          puts "\t#{index}-#{station.station_name}"
-        end
-        print 'Выберите начальную станцию: '
-        @current_station = @@road.stations[gets.chomp.strip.to_i]
-        puts "Station: #{@current_station.station_name}"
-        @current_station.each_train do |train|
-          puts "<[_-_-_]://. train: #{train.number}, type: #{train.type}, " \
-               " number of wagons: #{train.wagons.size}"
-        end
-        @@menu.make_choice
-
+        rendering_trains(self.class.superclass.road)
       when '3'
-        @@road.trains.each_with_index do |train, index|
-          puts "- #{index} - #{train.number} - #{train.type}"
-        end
-        print 'Выберите поезд: '
-        @current_train = @@road.trains[gets.chomp.to_i]
-        puts "<[_-_-_]://. train: #{@current_train.number}, " \
-             "type: #{@current_train.type}, " \
-             "number of wagons: #{@current_train.wagons.size}"
-        @current_train.each_wagon do |wagon|
-          if wagon.type == 'cargo'
-            puts "           .\\______/. wagon: #{wagon.id}-#{wagon.type}, " \
-                 "volume: #{wagon.show_volume}, threight: #{wagon.show_freight}"
-          elsif wagon.type == 'passenger'
-            puts "           .|_0__0_|. wagon: #{wagon.id}-#{wagon.type}, " \
-                 "free: #{wagon.show_free_seats}, " \
-                 "taken: #{wagon.show_taken_seats}"
-          end
-        end
-        @@menu.make_choice
-
+        rendering_wagons(self.class.superclass.road)
       when '0'
         break
       else
-        @@menu.make_choice
+        break
       end
-      break unless true
+      self.class.superclass.menu.make_choice
     end
   end
 end
 
+def stations_list(road, route)
+  road.routes[route].stations.each_with_index do |station, index|
+    puts "- #{index} - #{station.station_name}"
+  end
+end
+
+def trains_list(road)
+  road.trains.each_with_index do |train, index|
+    puts "- #{index} - #{train.number} - #{train.type}"
+  end
+end
+
+def wagons_list(road)
+  road.wagons.each_with_index do |wagon, index|
+    puts "- #{index} - #{wagon.id} - #{wagon.type}"
+  end
+end
+
+def rendering_trains(road)
+  road.stations.each_with_index do |station, index|
+    puts "\t#{index}-#{station.station_name}"
+  end
+  @current_station = road.stations[
+    user_input('Выберите начальную станцию: ').strip.to_i
+  ]
+  puts "Station: #{@current_station.station_name}"
+  @current_station.each_train do |train|
+    show_train_on_station(train)
+  end
+end
+
+def rendering_wagons(road)
+  road.trains.each_with_index do |train, index|
+    puts "- #{index} - #{train.number} - #{train.type}"
+  end
+  @current_train = road.trains[user_input('Выберите поезд: ').to_i]
+  show_train_on_station(@current_train)
+  @current_train.each_wagon do |wagon|
+    show_wagons_by_type(wagon)
+  end
+end
+
+def show_wagons_by_type(wagon)
+  if wagon.type == 'cargo'
+    puts "           .\\______/. wagon: #{wagon.id}-#{wagon.type}, " \
+         "volume: #{wagon.show_volume}, threight: #{wagon.show_freight}"
+  elsif wagon.type == 'passenger'
+    puts "           .|_0__0_|. wagon: #{wagon.id}-#{wagon.type}, " \
+         "free: #{wagon.show_free_seats}, " \
+         "taken: #{wagon.show_taken_seats}"
+  end
+end
+
+def show_train_on_station(train)
+  puts "<[_-_-_]://. train: #{train.number}, type: #{train.type}, " \
+                 "number of wagons: #{train.wagons.size}"
+end
+
 # keep railRoad object for cheking how it works
-$rr = nil
+# $rr = nil
 
 def start_program(rail_road = RailRoad.new)
-  # тестовый seed
-  $rr = rail_road
-  seed($rr)
-  MainMenu.new($rr).start_menu
+  # test seed
+  # $rr = rail_road
+  seed(rail_road)
+  MainMenu.new(rail_road).start_menu
 end
 
 start_program

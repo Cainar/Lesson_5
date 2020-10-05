@@ -9,20 +9,27 @@ class Station
   attr_reader :trains, :station_name
 
   # class var keeps created stations
-  @@stations = []
+  class << self
+    attr_reader :stations
+  end
+
+  def self.add_station(station)
+    @stations ||= []
+    @stations << station
+  end
 
   # class method returns all stations
   def self.all
-    @@stations
+    @stations
   end
 
   # init register
-  instances
+  counter
 
   def initialize(station_name)
     @station_name = station_name
     @trains = []
-    @@stations << self
+    self.class.add_station(self)
     register_instance
   end
 

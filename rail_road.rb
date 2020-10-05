@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# main class for keeping all railroad's objects
 class RailRoad
   attr_reader :stations, :trains, :routes, :wagons
 

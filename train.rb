@@ -4,27 +4,36 @@
 require_relative 'manufacturer'
 require_relative 'seat'
 
+# main class for train
 class Train
   include Manufacturer
   include InstanceCounter
 
   attr_reader :speed, :wagons, :route, :number, :type
-  @@trains = {}
+
+  class << self
+    attr_reader :trains
+  end
+
+  def self.add_train(train, number)
+    @trains ||= {}
+    @trains[number] = train
+  end
 
   # find train
   def self.find(train_number)
-    @@trains.key?(train_number) ? @@trains[train_number] : nil
+    trains.key?(train_number) ? trains[train_number] : nil
   end
 
-  instances
+  counter
 
-  def initialize(number = '', type)
+  def initialize(number, type)
     @number = number
     @type = type
     @wagons = []
     @speed = 0
     @route = nil
-    @@trains[number] = self
+    self.class.add_train(self, number)
     register_instance
   end
 
@@ -58,29 +67,28 @@ class Train
   end
 
   # moves to station, only one by one
-  def move_forward
+  def move(direction = 'forward')
     @route.stations.each_with_index do |station, index|
-      next unless station.trains.include?(self) && station != @route.stations.last
+      direction == 'back' ? index -= 1 : index += 1
+      @check = direction == 'back' ? 0 : -1
+      next unless station.trains.include?(self) && station != @route.stations[@check]
 
       station.departure(self)
-      @route.stations[index + 1].add_train(self)
-      print "Предыдущая: #{@route.stations[index].station_name} " unless @route.stations[index].nil?
-      print "<<Текущая: #{@route.stations[index + 1].station_name}>> --> "
-      print "Следующая: #{@route.stations[index + 2].station_name}\n" unless @route.stations[index + 2].nil?
+      @route.stations[index].add_train(self)
+      show_way(index, direction)
       break
     end
   end
 
-  def move_backward
-    @route.stations.each_with_index do |station, index|
-      next unless station.trains.include?(self) && station != @route.stations.first
-
-      station.departure(self)
-      @route.stations[index - 1].add_train(self)
-      print "Следующая: #{@route.stations[index].station_name}" unless @route.stations[index].nil?
-      print "<-- <<Текущая: #{@route.stations[index - 1].station_name}>> "
-      print "Предыдущая: #{@route.stations[index - 2].station_name}\n" unless (index - 2).negative?
-      break
+  def show_way(number, direction)
+    @locations = [@route.stations[number - 1].station_name,
+                  @route.stations[number].station_name,
+                  @route.stations[number + 1].station_name]
+    @locations.reverse! if direction == 'back'
+    @prefix = %w[last current next]
+    puts "Direction: #{direction}"
+    @locations.each_with_index do |location, index|
+      puts "#{@prefix[index]} -> [#{location}]"
     end
   end
 
@@ -93,7 +101,7 @@ end
 
 # Classes for passengers and caro
 class PassengerTrain < Train
-  instances
+  counter
 
   def initialize(number, type = 'passenger')
     super
@@ -102,7 +110,7 @@ end
 
 # class for cargo train
 class CargoTrain < Train
-  instances
+  counter
 
   def initialize(number, type = 'cargo')
     super

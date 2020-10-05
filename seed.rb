@@ -1,106 +1,81 @@
 # frozen_string_literal: true
 
-# Тестовые данные
+# Data for testing
 def seed(rail_road)
-  rail_road.stations << Station.new('Moscow')
-  rail_road.stations << Station.new('Arkhangelsk')
-  rail_road.stations << Station.new('Voronezh')
-  rail_road.stations << Station.new('Dubna')
-  rail_road.stations << Station.new('Kursk')
-  rail_road.stations << Station.new('Lipetsk')
-  rail_road.stations << Station.new('Nizhny Novgorod')
-  rail_road.stations << Station.new('Oryol')
-  rail_road.stations << Station.new('Penza')
-  rail_road.stations << Station.new('Ryazan')
-  rail_road.stations << Station.new('Saint Petersburg')
-  rail_road.stations << Station.new('Tambov')
-  rail_road.stations << Station.new('Tver')
-  rail_road.stations << Station.new('Tula')
-  rail_road.stations << Station.new('Chelyabinsk')
-  rail_road.stations << Station.new('Elista')
-  rail_road.stations << Station.new('Yaroslavl')
-  rail_road.stations << Station.new('Omsk')
-
-  rail_road.routes << Route.new(rail_road.stations[0], rail_road.stations[5])
-  rail_road.routes << Route.new(rail_road.stations[6], rail_road.stations[11])
-  rail_road.routes << Route.new(rail_road.stations[12], rail_road.stations[17])
-
-  rail_road.routes[0].add_station(rail_road.stations[1])
-  rail_road.routes[0].add_station(rail_road.stations[2])
-  rail_road.routes[0].add_station(rail_road.stations[3])
-  rail_road.routes[0].add_station(rail_road.stations[4])
-
-  rail_road.routes[1].add_station(rail_road.stations[7])
-  rail_road.routes[1].add_station(rail_road.stations[8])
-  rail_road.routes[1].add_station(rail_road.stations[3])
-  rail_road.routes[1].add_station(rail_road.stations[10])
-
-  rail_road.routes[2].add_station(rail_road.stations[13])
-  rail_road.routes[2].add_station(rail_road.stations[14])
-  rail_road.routes[2].add_station(rail_road.stations[15])
-  rail_road.routes[2].add_station(rail_road.stations[16])
+  cities = %w[Moscow Arkhangelsk Voronezh Dubna Kursk Lipetsk
+              Nizhny Novgorod Oryol Penza Ryazan Saint Petersburg
+              Tambov Tver Tula Chelyabinsk Elista Yaroslavl Omsk]
+  train_numbers = %w[T01-1C T02-1C T01-2C T01-1P T02-1P T01-2P]
+  make_cities(cities, rail_road)
+  make_way_stations(rail_road)
 
   # cargo passenger
-  rail_road.trains << CargoTrain.new('T01-1C')
-  rail_road.trains << CargoTrain.new('T02-1C')
-  rail_road.trains << CargoTrain.new('T01-2C')
-  rail_road.trains << PassengerTrain.new('T01-1P')
-  rail_road.trains << PassengerTrain.new('T02-1P')
-  rail_road.trains << PassengerTrain.new('T01-2P')
-
-  rail_road.trains[0].add_route(rail_road.routes[0])
-  rail_road.trains[1].add_route(rail_road.routes[1])
-  rail_road.trains[2].add_route(rail_road.routes[2])
-  rail_road.trains[3].add_route(rail_road.routes[0])
-  rail_road.trains[4].add_route(rail_road.routes[1])
-  rail_road.trains[5].add_route(rail_road.routes[2])
+  complete_trains(rail_road, train_numbers)
 
   # wagons
-  rail_road.add_wagon(CargoWagon.new(3.0))
-  rail_road.add_wagon(PassengerWagon.new(25))
-  rail_road.add_wagon(CargoWagon.new(1.5))
-  rail_road.add_wagon(CargoWagon.new(1.0))
-  rail_road.add_wagon(PassengerWagon.new(10))
-  rail_road.add_wagon(CargoWagon.new(3.0))
-  rail_road.add_wagon(PassengerWagon.new(30))
-  rail_road.add_wagon(CargoWagon.new(3.0))
-  rail_road.add_wagon(PassengerWagon.new(30))
-  rail_road.add_wagon(PassengerWagon.new(25))
-  rail_road.add_wagon(PassengerWagon.new(10))
-  rail_road.add_wagon(CargoWagon.new(2.5))
+  complete_wagons(rail_road)
+end
 
-  rail_road.trains[0].attach(rail_road.wagons[0])
-  rail_road.trains[3].attach(rail_road.wagons[1])
-  rail_road.trains[0].attach(rail_road.wagons[2])
-  rail_road.trains[0].attach(rail_road.wagons[3])
-  rail_road.trains[3].attach(rail_road.wagons[4])
-  rail_road.trains[0].attach(rail_road.wagons[5])
-  rail_road.trains[3].attach(rail_road.wagons[6])
-  rail_road.trains[1].attach(rail_road.wagons[7])
-  rail_road.trains[3].attach(rail_road.wagons[8])
-  rail_road.trains[4].attach(rail_road.wagons[9])
-  rail_road.trains[4].attach(rail_road.wagons[10])
-  rail_road.trains[1].attach(rail_road.wagons[11])
+def make_cities(cities, rail_road)
+  stations = rail_road.stations
+  cities.each { |citi| rail_road.stations << Station.new(citi) }
+  indexes = [[0, 5], [6, 11], [12, 17]]
+  indexes.each do |index|
+    rail_road.routes << Route.new(stations[index[0]], stations[index[1]])
+  end
+end
 
-  rail_road.wagons[0].fill_wagon(0.1)
-  rail_road.wagons[1].take_seat
-  rail_road.wagons[1].take_seat
-  rail_road.wagons[2].fill_wagon(0.2)
-  rail_road.wagons[3].fill_wagon(0.3)
-  rail_road.wagons[4].take_seat
-  rail_road.wagons[4].take_seat
-  rail_road.wagons[4].take_seat
-  rail_road.wagons[5].fill_wagon(0.4)
-  rail_road.wagons[6].take_seat
-  rail_road.wagons[7].fill_wagon(0.56)
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[8].take_seat
-  rail_road.wagons[9].take_seat
-  rail_road.wagons[10].take_seat
-  rail_road.wagons[11].fill_wagon(0.49)
+def make_way_stations(rail_road)
+  routes = rail_road.routes
+  stations = rail_road.stations
+  1.upto(4) { |n| routes[0].add_station(stations[n]) }
+  7.upto(10) { |n| routes[1].add_station(stations[n]) }
+  13.upto(16) { |n| routes[2].add_station(stations[n]) }
+end
+
+def make_wagons(rail_road)
+  cargo_volumes = (1.0...4.0).step(0.5).to_a
+  cargo_volumes.each { |volume| rail_road.add_wagon(CargoWagon.new(volume)) }
+  seat_volumes = (10...40).step(5).to_a
+  seat_volumes.each { |volume| rail_road.add_wagon(PassengerWagon.new(volume)) }
+end
+
+def attach_wagons(rail_road)
+  wagons = rail_road.wagons
+  0.upto(5) { |index| rail_road.trains[0].attach(wagons[index]) }
+  6.upto(11) { |index| rail_road.trains[3].attach(wagons[index]) }
+end
+
+def make_trains(rail_road, train_numbers)
+  train_numbers.each_with_index do |number, index|
+    rail_road.trains << if index < 3
+                          CargoTrain.new(number)
+                        else
+                          PassengerTrain.new(number)
+                        end
+  end
+end
+
+def fill_space(rail_road)
+  fill_counter = 0.99
+  0.upto(5) do |index|
+    rail_road.wagons[index].fill_wagon(fill_counter *= 1.1)
+  end
+
+  6.upto(11) do |index|
+    index.times { rail_road.wagons[index].take_seat }
+  end
+end
+
+def complete_wagons(rail_road)
+  make_wagons(rail_road)
+  attach_wagons(rail_road)
+  fill_space(rail_road)
+end
+
+def complete_trains(rail_road, train_numbers)
+  make_trains(rail_road, train_numbers)
+  rail_road.trains.each_with_index do |train, index|
+    train.add_route(rail_road.routes[index % 3])
+  end
 end

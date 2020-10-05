@@ -6,7 +6,7 @@ class Route
 
   attr_reader :start_station, :end_station, :stations, :route_id
   # init register
-  instances
+  counter
 
   def initialize(start_station, end_station)
     @route_id = "R-#{rand(10)}#{rand(10)}"
@@ -27,6 +27,6 @@ class Route
 
   # delete way station
   def delete_station(station)
-    @stations.delete(station) unless station == @stations.first || station == @stations.last
+    @stations.delete(station) unless [@stations.first, @stations.last].include?(station)
   end
 end

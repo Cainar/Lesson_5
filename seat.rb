@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# сreate passenger a seat in the wagon
+# create passenger a seat in the wagon
 class Seat
   # show if seat have taken
   attr_accessor :occupancy
