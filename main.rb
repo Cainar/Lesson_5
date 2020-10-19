@@ -6,10 +6,12 @@ require_relative 'route'
 require_relative 'train'
 require_relative 'seed'
 require_relative 'rail_road'
+require_relative 'accessors'
 
 # main class for menu
 class MainMenu
   include Validation
+  include Accessors
   require 'csv'
 
   attr_reader :choice, :menu_items
@@ -85,6 +87,16 @@ end
 
 # make railroad objects
 class CreateMenu < MainMenu
+  validate :name_station, :presence
+  validate :name_station, :type, String
+  validate :name_station, :format, /^[a-zA-Z]{2,16}$/i
+
+  validate :train_number, :presence
+  validate :train_number, :format, /^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i
+
+  validate :train_type, :presence
+  validate :train_type, :format, /^[1-2]{1}$/
+
   def initialize
     @filename = 'mainMenu.csv'
     @col = 1
@@ -95,47 +107,32 @@ class CreateMenu < MainMenu
       case self.class.superclass.menu.choice
       when '1'
         loop do
-          @name_station = user_input('Введите название станции: ')
-          if valid?(@name_station, 'more', 16)
+          @name_station = user_input('Введите название станции (не более 16 символов): ')
+          puts self.class.superclass.validates
+          if valid?(:name_station)
             self.class.superclass.road.add_s(Station.new(@name_station))
             break
           else
             puts 'СТАНЦИЯ НЕ СОЗДАНА'
-            puts err_title('length', 'more', 16)
-            puts err_title('nil')
           end
         end
 
       when '2'
         loop do
           @train_number = user_input('Введите номер поезда: ')
-          if valid?(@train_number,
-                    'less',
-                    @train_number.include?('-') ? 6 : 5,
-                    /^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i)
+          if valid?(:train_number)
             loop do
               @train_type = user_input("Укажите тип поезда.\n" \
                                        "- 1 - Cargo;\n" \
                                        "- 2 - Passenger\n")
-              if valid?(@train_type,
-                        'more',
-                        1,
-                        /^[1-2]{1}$/)
+              if valid?(:train_type)
                 break
               else
-                puts err_title('length', 'more', 1)
-                puts err_title('nil')
-                puts err_title('format', nil, nil, '/^[1-2]{1}$/')
                 puts 'необходимо ввести 1 или 2'
               end
             end
             break
           else
-            puts err_title('length', 'more', 5)
-            puts err_title('nil')
-            puts err_title(
-              'format', nil, nil, '/^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i'
-            )
             puts 'ПОЕЗД НЕ СОЗДАН'
           end
         end

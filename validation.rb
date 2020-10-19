@@ -1,42 +1,54 @@
 # frozen_string_literal: true
 
-# module add validations for input from user
+# rubocop:disable all
+
 module Validation
-  # if validate raise exeption return true,
-  def valid?(parameter, method = nil, length = nil, parameter_format = nil)
-    validate!(parameter, method, length, parameter_format)
-    true
-  rescue StandardError
-    false
+  def self.included(receiver)
+    receiver.extend         ClassMethods
+    receiver.send :include, InstanceMethods
   end
 
-  protected
+  module ClassMethods
+    def validate(attribute, type, template = nil)
+      @validates ||= []
+      @validates << [attribute, type, template]
+    end
 
-  # raise exeption deprnding on validation type
-  def validate!(parameter, method = nil, length = nil, parameter_format = nil)
-    raise err_title('nil') if parameter.nil?
-    raise err_title('length', method, length) if !length.nil? && verification_method(parameter, method, length)
-    raise err_title('format') if !parameter_format.nil? && parameter !~ parameter_format
-  end
-
-  # check string length
-  def verification_method(parameter, method, limit)
-    case method
-    when 'less'
-      parameter.length < limit
-    when 'more'
-      (parameter.length > limit) || parameter.empty?
-    else true
+    def validates
+      @validates
     end
   end
 
-  # set error message depending on error type
-  def err_title(type, method = nil, size = nil, parameter_format = nil)
-    case type
-    when 'nil' then "Parameter can't be nil"
-    when 'length' then "Parameter should be not #{method} #{size} symbols"
-    when 'format' then "Format shoul be #{parameter_format}"
-    else 'undefined'
+  module InstanceMethods
+    def validate!(attribute_selection = self.class.validates)
+      # запускает все проверки (валидации), указанные в классе через метод класса validate
+      # случае ошибки валидации выбрасывает исключение с сообщением о том, какая именно валидация не прошла
+      attribute_selection.each do |attribute, type, template|
+        attribute = instance_variable_get("@#{attribute}")
+        case type
+        when :presence
+          raise StandardError, 'presence error' if attribute.nil? || attribute.empty?
+        when :format
+          raise StandardError, 'format error' if attribute !~ template
+        when :type
+          raise StandardError, 'type error' if attribute.class != template
+        else
+          raise StandardError, 'check type of attribute is undefined'
+        end
+      end
+    end
+
+    def valid?(attribute_selection = self.class.validates)
+      if attribute_selection != self.class.validates
+        attribute_selection = self.class.validates.select { |attribute, type, template| attribute == attribute_selection }
+      end
+      validate!(attribute_selection)
+      true
+    rescue StandardError => e
+      puts e.message
+      false
     end
   end
 end
+
+# rubocop:enable all

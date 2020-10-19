@@ -1,25 +1,30 @@
 # frozen_string_literal: true
 
+require_relative 'accessors'
+
 # create passenger a seat in the wagon
 class Seat
+  include Accessors
+
+  attr_accessor_with_history :occupancy
   # show if seat have taken
-  attr_accessor :occupancy
+  #attr_accessor :occupancy
   # pirimary key
   attr_reader :seat_id
 
   def initialize
     @seat_id = "#{random_letter}#{rand(9)}#{rand(9)}"
-    @occupancy = false
+    self.occupancy = false
   end
 
   # take seat
   def take
-    @occupancy = true
+    self.occupancy = true
   end
 
   # take room
   def leave
-    @occupancy = false
+    self.occupancy = false
   end
 
   protected

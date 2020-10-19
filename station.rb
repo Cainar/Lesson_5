@@ -1,12 +1,17 @@
 # frozen_string_literal: true
 
 require_relative 'instance_counter'
+require_relative 'validation'
+require_relative 'accessors'
 
 # Class for stations
 class Station
   include InstanceCounter
+  include Validation
+  include Accessors
 
-  attr_reader :trains, :station_name
+  attr_accessor :trains
+  strong_attr_accessor station_name: String
 
   # class var keeps created stations
   class << self
@@ -27,7 +32,8 @@ class Station
   counter
 
   def initialize(station_name)
-    @station_name = station_name
+    station_name
+    self.station_name = station_name
     @trains = []
     self.class.add_station(self)
     register_instance

@@ -3,6 +3,7 @@
 # Class Train:
 require_relative 'manufacturer'
 require_relative 'seat'
+require_relative 'accessors'
 
 # main class for train
 class Train
@@ -131,7 +132,6 @@ end
 # class for cargo wagon
 class CargoWagon < Wagon
   attr_reader :volume, :cargo
-  # DEFAUT_VOLUME = 1.0
 
   def initialize(size)
     super
@@ -162,8 +162,10 @@ end
 
 # subclass for passenger types
 class PassengerWagon < Wagon
+  include Accessors
+
   # arr for seats
-  attr_accessor :seats
+  strong_attr_accessor seats: Array
 
   def initialize(seats_number)
     super
