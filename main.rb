@@ -89,7 +89,7 @@ end
 class CreateMenu < MainMenu
   validate :name_station, :presence
   validate :name_station, :type, String
-  validate :name_station, :format, /^[a-zA-Z]{2,16}$/i
+  validate :name_station, :format, /^[a-z]{2,16}$/i
 
   validate :train_number, :presence
   validate :train_number, :format, /^[a-z0-9]{3}[-]?[a-z0-9]{2}$/i
@@ -108,7 +108,6 @@ class CreateMenu < MainMenu
       when '1'
         loop do
           @name_station = user_input('Введите название станции (не более 16 символов): ')
-          puts self.class.superclass.validates
           if valid?(:name_station)
             self.class.superclass.road.add_s(Station.new(@name_station))
             break
